@@ -23,6 +23,7 @@ class tweet_search_bot:
         Parses arguments using the argument parser class
         """
         parser = argument_parser()
+        parser.process_parameters()
         self.search_parameters = parser.get_parameters()
 
     def read_search_parameters_from_json(self, filename: str) -> None:
@@ -104,7 +105,8 @@ class tweet_search_bot:
         return tweets
 
 if __name__ == '__main__':
-
+    the_bot = tweet_search_bot()
+    the_bot.get_the_tweets()
     search_parameters = parse_arguments()
     api = connect_to_api(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
     if API_TYPE == "basic":

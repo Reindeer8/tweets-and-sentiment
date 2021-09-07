@@ -9,10 +9,12 @@ class argument_parser:
         
         self.search_parameters = {}
         
+    def parse_parameters(self):    
         self.parse_cl_arguments()
         if "filename" in self.search_parameters:
             self.read_search_parameters_from_json(self, self.search_parameters["filename"])
-            del self.search_parameters["filename"] 
+            del self.search_parameters["filename"]
+ 
         
         self.fill_in_missing_date()
 
