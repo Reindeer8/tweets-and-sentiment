@@ -4,18 +4,28 @@ import json
 
 class argument_parser:
 
-    search_parameters = {}
 
     def __init__(self):
+        
+        self.search_parameters = {}
+        
         self.parse_cl_arguments()
-        self.read_search_parameters_from_json()
+        if "filename" in self.search_parameters:
+            self.read_search_parameters_from_json(self, self.search_parameters["filename"])
+            del self.search_parameters["filename"] 
+        
         self.fill_in_missing_date()
 
     def read_search_parameters_from_json(self, filename: str) -> None:
-
+        """
+        Reads search parameters from json file
+        """
         with open(filename, 'r') as json_file:
-            search_parameters = json.load(json_file)
+            the_parameters =  json.load(json_file)
         
+        for key, value in the_parameters.items():
+            self.search_parameters[key] = value
+
         return None
 
     def fill_in_missing_date(self: dict) -> None:
@@ -46,17 +56,17 @@ class argument_parser:
         parser.add_argument( '-r',  '--region',     dest='region',      type=str, help='region of tweets')
         parser.add_argument( '-la', '--language',   dest='language',    type=str, help='language of tweets')
         
-        the_arguments = vars(parser.parse_args())
+        self.search_parameters = vars(parser.parse_args())
         
         # removes empty arguments
-        the_arguments = dict([[key, value] for key, value in the_arguments.items() if value])    
+        self. search_parameters = dict([[key, value] for key, value in self.search_parameters.items() if value])
 
         print(the_arguments)
 
         # reads arguments from json file
         if the_arguments['filename']:
-            json_arguments = self.read_search_parameters_from_json(the_arguments['filename'])
             del the_arguments['filename']
+
         print(the_arguments)
         # assigns json arguments to the main argument dictionary
         for json_key, json_value in json_arguments.items():

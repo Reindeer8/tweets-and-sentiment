@@ -4,6 +4,7 @@ from twitter_creditentials import CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, A
 import json
 from datetime import datetime
 from pprint import pprint
+from argument_parser import argument_parser
 
 
 API_TYPE = "basic" 
@@ -13,10 +14,24 @@ API_TYPE = "basic"
 class tweet_search_bot:    
 
     def __init__(self):
-        self.search_parameters = {}
-        self.parse_arguments(self)
+
+        self.search_parameters = {}        
+        self.api = None
+
+    def get_search_parameters(self):
+        """
+        Parses arguments using the argument parser class
+        """
+        parser = argument_parser()
+        self.search_parameters = parser.get_parameters()
 
     def read_search_parameters_from_json(self, filename: str) -> None:
+        """
+        Reads parameters from json file, if filename argument provided in command line.
+        And assign appropriate values in the parser search_parameters variable.
+        In case the same parameter provided in file and in cli,
+        the cli parameter will be rewritten by the one from file.
+        """
 
         with open(filename, 'r') as json_file:
             search_parameters = json.load(json_file)
@@ -28,19 +43,19 @@ class tweet_search_bot:
         If starting date indicated and no end date provided, then end date will be set to now.
         If no start date indicated, then date of first tweet will be filled in.    
         """
-        first_tweet_date = '2006-03-01'
+        FIRST_TWEET_DATE = '2006-03-01'
 
         if 'date_from' in self.search_parameters and 'date_till' not in self.search_parameters:
             self.search_parameters['date_till'] = datetime.today().strftime('%Y-%m-%d')
 
         if 'date_from' not in self.search_parameters and 'date_till' not in self.search_parameters:
-            self.search_parameters['date_from'] = first_tweet_date
-    
+            self.search_parameters['date_from'] = FIRST_TWEET_DATE
+    """ 
     def parse_arguments(self):
-        """
+        
         Parses search parameters. Command line arguments may contain filename of json file with the parameters.
         Parameters in file take precedence over cli arguments.
-        """
+        
         
         parser = argparse.ArgumentParser(description='Indicate the names of the files')  
         
@@ -69,7 +84,7 @@ class tweet_search_bot:
         print(the_arguments)
         self.search_parameters = the_arguments
         return the_arguments
-
+    """
 
     def connect_to_api(self, consumer_key, consumer_secret, access_token, access_token_secret):
 
@@ -79,7 +94,7 @@ class tweet_search_bot:
         api = tweepy.API(auth)
         return api
 
-    def search_for_tweets_basic(self, api, search_parameters):
+    def search_for_tweets_basic(self, api):
         
         q = search_parameters['keywords']
         try:
