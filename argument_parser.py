@@ -10,13 +10,15 @@ class argument_parser:
         self.search_parameters = {}
         
     def parse_parameters(self):    
+
         self.parse_cl_arguments()
+        print(self.search_parameters)
         if "filename" in self.search_parameters:
-            self.read_search_parameters_from_json(self, self.search_parameters["filename"])
+            self.read_search_parameters_from_json(self.search_parameters["filename"])
             del self.search_parameters["filename"]
- 
         
         self.fill_in_missing_date()
+        print(self.search_parameters)
 
     def read_search_parameters_from_json(self, filename: str) -> None:
         """
@@ -63,24 +65,9 @@ class argument_parser:
         # removes empty arguments
         self. search_parameters = dict([[key, value] for key, value in self.search_parameters.items() if value])
 
-        print(the_arguments)
-
-        # reads arguments from json file
-        if the_arguments['filename']:
-            del the_arguments['filename']
-
-        print(the_arguments)
-        # assigns json arguments to the main argument dictionary
-        for json_key, json_value in json_arguments.items():
-            the_arguments[json_key] = json_value
-        
-        the_arguments = self.fill_in_missing_date(the_arguments)
-        print(the_arguments)
-        self.search_parameters = the_arguments
-        return the_arguments
-
-    def get_parameters() -> dict:
-        return self.search_
+    def get_parameters(self) -> dict:
+        self.parse_parameters()
+        return self.search_parameters
 
 if __name__ == "__main__":
 
