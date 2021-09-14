@@ -2,17 +2,19 @@ import argparse
 from datetime import datetime
 import json
 
-class argument_parser:
-
+class ArgumentParser:
 
     def __init__(self):
         
         self.search_parameters = {}
         
     def parse_parameters(self):    
-
+        """
+        Strings together class methods to parse cl arguments and if file indicated in those 
+        parses also the ones written in the file. Cl arguemtns will be overwritten by the ones from file,
+        in case of overlapping parameters.
+        """
         self.parse_cl_arguments()
-        print(self.search_parameters)
         if "filename" in self.search_parameters:
             self.read_search_parameters_from_json(self.search_parameters["filename"])
             del self.search_parameters["filename"]
@@ -26,7 +28,6 @@ class argument_parser:
         """
         with open(filename, 'r') as json_file:
             the_parameters =  json.load(json_file)
-        
         for key, value in the_parameters.items():
             self.search_parameters[key] = value
 
@@ -38,10 +39,8 @@ class argument_parser:
         If no start date indicated, then date of first tweet will be filled in.    
         """
         first_tweet_date = '2006-03-01'
-
         if 'date_from' in self.search_parameters and 'date_till' not in self.search_parameters:
             self.search_parameters['date_till'] = datetime.today().strftime('%Y-%m-%d')
-
         if 'date_from' not in self.search_parameters and 'date_till' not in self.search_parameters:
             self.search_parameters['date_from'] = first_tweet_date
     
@@ -50,7 +49,6 @@ class argument_parser:
         Parses search parameters. Command line arguments may contain filename of json file with the parameters.
         Parameters in file take precedence over cli arguments.
         """
-        
         parser = argparse.ArgumentParser(description='Indicate the names of the files')  
         
         parser.add_argument( '-f',  '--filename',   dest='filename',    type=str, help='txt file with search parameters', default='parameters.json')
@@ -71,5 +69,5 @@ class argument_parser:
 
 if __name__ == "__main__":
 
-    a = argument_parser()
+    a = ArgumentParser()
     print(a.get_parameters())

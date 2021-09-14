@@ -9,28 +9,31 @@ API_TYPE = "basic"
 # other option would be "advanced" for full archive search
 # in the latter case parameter names should be adjusted accordingly
 
-class tweet_search_bot:    
+class TweetSearchBot:
 
     def __init__(self):
 
         self.search_parameters = {}
-        self.api = None    
+        self.auth = None
+        self.connect_to_api(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)   
 
     def get_search_parameters(self):
         """
         Parses arguments using the argument parser class
         """
-        parser = argument_parser()
+        parser = ArgumentParser()
         self.search_parameters = parser.get_parameters()
 
     def connect_to_api(self, consumer_key, consumer_secret, access_token, access_token_secret):
-
+        """
+        Connects to the twitter api with creditentials from the twitter_creditentials.py
+        """
         auth = tweepy.OAuthHandler( consumer_key, consumer_secret)
         auth.set_access_token( access_token, access_token_secret)
 
         self.api = tweepy.API(auth)
 
-    def basic_search_for_tweets(self):
+    def search_for_tweets_with_cursor(self):
         if not self.api:
             raise Exception('No api to talk to') 
         q = self.search_parameters['keywords']
@@ -41,13 +44,13 @@ class tweet_search_bot:
         return tweets
 
 if __name__ == '__main__':
-    the_bot = tweet_search_bot()
+    the_bot = TweetSearchBot()
     the_bot.get_search_parameters()
-    the_bot.connect_to_api(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
     if API_TYPE == "basic":
         tweets = the_bot.basic_search_for_tweets()
     else:
         pass
+        # potential future functionality
     for tweet in tweets:
         print('\n\n')  
         print('Author: ' + tweet.author.name)
