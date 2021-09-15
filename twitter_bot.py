@@ -1,18 +1,21 @@
 import tweepy
 from twitter_creditentials import CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET
 from datetime import datetime
-from pprint import pprint
-from argument_parser import argument_parser
+from argument_parser import ArgumentParser
 
 
-API_TYPE = "basic" 
+#API_TYPE = "basic" 
 # other option would be "advanced" for full archive search
 # in the latter case parameter names should be adjusted accordingly
 
 class TweetSearchBot:
+    """
+    The class handles communication with twitter using tweepy.
+    Its goal is to get tweets from twitter.
+    """
 
     def __init__(self):
-
+        
         self.search_parameters = {}
         self.auth = None
         self.connect_to_api(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)   
@@ -34,6 +37,7 @@ class TweetSearchBot:
         self.api = tweepy.API(auth)
 
     def search_for_tweets_with_cursor(self):
+
         if not self.api:
             raise Exception('No api to talk to') 
         q = self.search_parameters['keywords']
@@ -44,6 +48,7 @@ class TweetSearchBot:
         return tweets
 
 if __name__ == '__main__':
+
     the_bot = TweetSearchBot()
     the_bot.get_search_parameters()
     if API_TYPE == "basic":
