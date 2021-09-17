@@ -9,7 +9,7 @@ from nltk import classify, NaiveBayesClassifier
 from random import shuffle
 from nltk.corpus import wordnet
 nltk.download('wordnet')
-
+ testing
 # In large part this implementation of sentiment analysis was inspired by
 # this article: 
 # https://www.digitalocean.com/community/tutorials/how-to-perform-sentiment-analysis-in-python-3-using-the-natural-language-toolkit-nltk
@@ -73,7 +73,7 @@ class SentimentAnalyzer:
 
         shuffle(dataset)
 
-        self.classifier = NaiveBayesClassifier.train(dataset)
+        self.classifier = NaiveBayesClassifier.train(dataset).
 
 
     def _get_tweets_for_model(cleaned_tokens_list):
