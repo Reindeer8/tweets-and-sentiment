@@ -4,9 +4,10 @@ from datetime import datetime
 from argument_parser import ArgumentParser
 
 
-#API_TYPE = "basic" 
+API_TYPE = "basic" 
 # other option would be "advanced" for full archive search
-# in the latter case parameter names should be adjusted accordingly
+# in the latter case parameter names should be adjusted accordingly.
+# Another way could be continuous or cursor
 
 class TweetSearchBot:
     """
@@ -36,13 +37,13 @@ class TweetSearchBot:
 
         self.api = tweepy.API(auth)
 
-    def search_for_tweets_with_cursor(self):
+    def basic_search_for_tweets(self):
 
         if not self.api:
             raise Exception('No api to talk to') 
         q = self.search_parameters['keywords']
         try:
-            tweets = self.api.search(q, count = 20, tweet_mode = 'extended')
+            tweets = self.api.search(q, count = 100, tweet_mode = 'extended')
         except :
             print('Something wrong with search request')
         return tweets

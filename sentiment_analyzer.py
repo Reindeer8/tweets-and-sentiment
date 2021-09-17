@@ -3,44 +3,56 @@ from nltk.corpus import twitter_samples, stopwords
 from nltk.tag import pos_tag
 from nltk.tokenize import word_tokenize
 from nltk import FreqDist, classify, NaiveBayesClassifier
-import re, string, random
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import re 
+import string
+import random
 from nltk.corpus import wordnet
 
 # In large part this implementation of sentiment analysis was inspired by
 # this article: 
 # https://www.digitalocean.com/community/tutorials/how-to-perform-sentiment-analysis-in-python-3-using-the-natural-language-toolkit-nltk
 
-class TweetPreprocessor:
+class SentimentAnalyzer:
 
-    def __init__():
-        pass
+    def __init__(self, text:str = None):
 
-    def leave_only_letters():
+        self.text = text
+        if text:
+            self.tokenize(text)
+            return
+        else:
+            self.text = None
+
+    def clean(text: str):
+
+    def tokenize(text):
+
+        return word_tokenize(text)
+
+    def normalize():
         pass
+    
     def remove_noise(tweet_tokens, stop_words = ()):
 
         cleaned_tokens = []
 
+        pos_dict = {'J':wordnet.ADJ, 'V':wordnet.VERB, 'N':wordnet.NOUN, 'R':wordnet.ADV}
         for token, tag in pos_tag(tweet_tokens):
-            token = re.sub('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+#]|[!*\(\),]|'\
-                        '(?:%[0-9a-fA-F][0-9a-fA-F]))+','', token)
-            token = re.sub("(@[A-Za-z0-9_]+)","", token)
-
-            if tag.startswith("NN"):
-                pos = 'n'
-            elif tag.startswith('VB'):
-                pos = 'v'
-            else:
-                pos = 'a'
-
+            token = re.sub('(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]\
+                +[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\
+                    \.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]\
+                    {2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})','', token)
+            token = re.sub('(@[A-Za-z0-9_]+)','', token)
+            pos = pos_dict[tag[0]]            
+    
             lemmatizer = WordNetLemmatizer()
             token = lemmatizer.lemmatize(token, pos)
 
             if len(token) > 0 and token not in string.punctuation and token.lower() not in stop_words:
                 cleaned_tokens.append(token.lower())
-        return cleaned_tokens
 
+        return cleaned_tokens
+    def train_naive_Bayes_classificator():
     def get_all_words(cleaned_tokens_list):
         for tokens in cleaned_tokens_list:
             for token in tokens:
@@ -113,5 +125,5 @@ if __name__ == "__main__":
     stopwords.ensure_loaded()
     
     print(dir(wordnet))
-    print(wordnet)
+    print(wordnet.ADJ)
     #do_sentiment()
