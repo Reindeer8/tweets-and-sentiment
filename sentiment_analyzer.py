@@ -2,7 +2,8 @@
 # this article: 
 # https://www.digitalocean.com/community/tutorials/how-to-perform-sentiment-analysis-in-python-3-using-the-natural-language-toolkit-nltk
 
-import re 
+import re
+from typing import Generator 
 
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.corpus import twitter_samples, stopwords
@@ -32,6 +33,7 @@ class SentimentAnalyzer:
                     \.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]\
                     {2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})', '', token)
             token = re.sub('(@[A-Za-z0-9_]+)', '', token)
+
             pos = pos_dict.get(tag[0], 'a')
     
             token = self.lemmatizer.lemmatize(token, pos)
