@@ -5,22 +5,28 @@ import json
 class ArgumentParser:
 
     def __init__(self):
+        self.valid_search_keys = set(
+            'q', 'geocode', 'lang', 'locale', 'result_type', 'count', 'until', 'since_id', 'max_id', 'include_entities')        
+        self.all_search_parameters = {}
+        self.valid_search_parameter = {}
+        self.invalid_search_parameters = {}
         
-        self.search_parameters = {}
-        
-    def parse_parameters(self):    
+    def parse_parameters(self):
         """
         Strings together class methods to parse cl arguments and if file indicated in those 
         parses also the ones written in the file. Cl arguemtns will be overwritten by the ones from file,
         in case of overlapping parameters.
-        """
+        """        
         self.parse_cl_arguments()
         if "filename" in self.search_parameters:
             self.read_search_parameters_from_json(self.search_parameters["filename"])
             del self.search_parameters["filename"]
-        
-        self.fill_in_missing_date()
-        print(self.search_parameters)
+
+        for key, value in self.search_parameters.items():
+            if key in self.valid_search_keys:
+                self.valid_search_parameters[key] = value
+            else:
+                self.invalid_search_parameters[key] = value
 
     def read_search_parameters_from_json(self, filename: str) -> None:
         """
@@ -32,17 +38,6 @@ class ArgumentParser:
             self.search_parameters[key] = value
 
         return None
-
-    def fill_in_missing_date(self: dict) -> None:
-        """
-        If starting date indicated and no end date provided, then end date will be set to now.
-        If no start date indicated, then date of first tweet will be filled in.    
-        """
-        first_tweet_date = '2006-03-01'
-        if 'date_from' in self.search_parameters and 'date_till' not in self.search_parameters:
-            self.search_parameters['date_till'] = datetime.today().strftime('%Y-%m-%d')
-        if 'date_from' not in self.search_parameters and 'date_till' not in self.search_parameters:
-            self.search_parameters['date_from'] = first_tweet_date
     
     def parse_cl_arguments(self):
         """
@@ -52,16 +47,15 @@ class ArgumentParser:
         parser = argparse.ArgumentParser(description='Indicate the names of the files')  
         
         parser.add_argument( '-f',  '--filename',   dest='filename',    type=str, help='txt file with search parameters', default='parameters.json')
-        parser.add_argument( '-k',  '--keywords',   dest='keywords',    type=str, help='keywords to search by')
-        parser.add_argument( '-df', '--date_from',  dest='date_from',   type=str, help='start date')
-        parser.add_argument( '-dt', '--date_till',  dest='date_till',   type=str, help='end_date')
-        parser.add_argument( '-r',  '--region',     dest='region',      type=str, help='region of tweets')
-        parser.add_argument( '-la', '--language',   dest='language',    type=str, help='language of tweets')
+        parser.add_argument( '-k',  '--keywords',   dest='q',           type=str, help='keywords to search by')
+        parser.add_argument( '-dt', '--date_till',  dest='until',       type=str, help='end_date')
+        # parser.add_argument( '-r',  '--region',     dest='region',      type=str, help='region of tweets')
+        parser.add_argument( '-la', '--language',   dest='lang',    type=str, help='language of tweets')
         
         self.search_parameters = vars(parser.parse_args())
         
         # removes empty arguments
-        self. search_parameters = dict([[key, value] for key, value in self.search_parameters.items() if value])
+        self.search_parameters = dict([[key, value] for key, value in self.search_parameters.items() if value])
 
     def get_parameters(self) -> dict:
         self.parse_parameters()

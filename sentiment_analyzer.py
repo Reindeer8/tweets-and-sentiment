@@ -3,7 +3,6 @@
 # https://www.digitalocean.com/community/tutorials/how-to-perform-sentiment-analysis-in-python-3-using-the-natural-language-toolkit-nltk
 
 import re
-from typing import Generator 
 
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.corpus import twitter_samples, stopwords
@@ -11,6 +10,11 @@ from nltk.tag import pos_tag
 from nltk.tokenize import word_tokenize
 from nltk import classify, NaiveBayesClassifier
 from random import shuffle
+
+# import nltk
+# nltk.download('twitter_samples')
+# nltk.download('averaged_perceptron_tagger')
+# nltk.download('punkt')
 # from nltk.corpus import wordnet
 
 class SentimentAnalyzer:
@@ -105,5 +109,6 @@ if __name__ == "__main__":
     print('Accuracy is:', tweet_analyzer.accuracy_info())
 
     for custom_tweet in custom_tweets:
+        print()
         print(custom_tweet)
         print(tweet_analyzer.determine_sentiment(custom_tweet))

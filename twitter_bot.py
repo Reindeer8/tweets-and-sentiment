@@ -19,49 +19,64 @@ class TweetSearchBot:
         
         self.search_parameters = {}
         self.auth = None
-        self.connect_to_api(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)   
+        self.connect_to_api(
+            CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)   
 
     def get_search_parameters(self):
-        """
-        Parses arguments using the argument parser class
-        """
+        """Parses arguments using the argument parser class"""
         parser = ArgumentParser()
         self.search_parameters = parser.get_parameters()
 
     def connect_to_api(self, consumer_key, consumer_secret, access_token, access_token_secret):
-        """
-        Connects to the twitter api with creditentials from the twitter_creditentials.py
-        """
-        auth = tweepy.OAuthHandler( consumer_key, consumer_secret)
-        auth.set_access_token( access_token, access_token_secret)
+        """Connects to the twitter api with creditentials from the twitter_creditentials.py"""
+        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+        auth.set_access_token(access_token, access_token_secret)
 
         self.api = tweepy.API(auth)
 
-    def basic_search_for_tweets(self):
+    def dummy(self, **x):
+        print(x)
+        
+    def basic_tweet_search_with_cursor(self):
 
         if not self.api:
-            raise Exception('No api to talk to') 
-        q = self.search_parameters['keywords']
-        try:
-            tweets = self.api.search(q, count = 100, tweet_mode = 'extended')
-        except :
-            print('Something wrong with search request')
-        return tweets
+            raise Exception('No api to talk to')
+        tweet_list = []
+        self.dummy(**self.search_parameters)
+        for tweet in tweepy.Cursor(self.api.search, q = self.search_parameters['q']).items(10):
+            tweet_list.append(tweet)
+        # q = self.search_parameters['keywords']
+        # try:
+        #     tweets = self.api.search(q, count = 100, tweet_mode = 'extended')
+        # except :
+        #     print('Something wrong with search request')
+
+        return tweet_list
+
+
+    def get_live_tweets_with_stream(self):
+
+        pass
 
 if __name__ == '__main__':
+
+
+    from pprint import pprint
 
     the_bot = TweetSearchBot()
     the_bot.get_search_parameters()
     if API_TYPE == "basic":
-        tweets = the_bot.basic_search_for_tweets()
+        tweets = the_bot.basic_tweet_search_with_cursor()
     else:
         pass
         # potential future functionality
-    for tweet in tweets:
-        print('\n\n')  
-        print('Author: ' + tweet.author.name)
-        print('The tweet is truncated: ', tweet.truncated)
-        print('The text of tweet:\n' + tweet.full_text)
+    # for tweet in tweets:
+    #     print('\n\n')
+        # print('Author: ' + tweet.author.name)
+        # print('The tweet is truncated: ', tweet.truncated)
+        # print('The text of tweet:\n' + tweet.full_text)
+    print()
+    pprint(tweets[0]._json)
 
     '''
     auth = tweepy.OAuthHandler( CONSUMER_KEY, CONSUMER_SECRET)
