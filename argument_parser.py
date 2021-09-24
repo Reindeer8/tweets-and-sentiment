@@ -5,10 +5,9 @@ import json
 class ArgumentParser:
 
     def __init__(self):
-        self.valid_search_keys = set(
-            'q', 'geocode', 'lang', 'locale', 'result_type', 'count', 'until', 'since_id', 'max_id', 'include_entities')        
+        self.valid_search_keys = {'q', 'geocode', 'lang', 'locale', 'result_type', 'count', 'until', 'since_id', 'max_id', 'include_entities', 'mode'}
         self.all_search_parameters = {}
-        self.valid_search_parameter = {}
+        self.valid_search_parameters= {}
         self.invalid_search_parameters = {}
         
     def parse_parameters(self):
@@ -29,9 +28,7 @@ class ArgumentParser:
                 self.invalid_search_parameters[key] = value
 
     def read_search_parameters_from_json(self, filename: str) -> None:
-        """
-        Reads search parameters from json file
-        """
+        """Reads search parameters from json file"""
         with open(filename, 'r') as json_file:
             the_parameters =  json.load(json_file)
         for key, value in the_parameters.items():
@@ -48,18 +45,21 @@ class ArgumentParser:
         
         parser.add_argument( '-f',  '--filename',   dest='filename',    type=str, help='txt file with search parameters', default='parameters.json')
         parser.add_argument( '-k',  '--keywords',   dest='q',           type=str, help='keywords to search by')
-        parser.add_argument( '-dt', '--date_till',  dest='until',       type=str, help='end_date')
+        parser.add_argument( '-until', '--until',  dest='until',       type=str, help='end date (format YYYY-mm-dd)')
         # parser.add_argument( '-r',  '--region',     dest='region',      type=str, help='region of tweets')
         parser.add_argument( '-la', '--language',   dest='lang',    type=str, help='language of tweets')
+
+        parser.add_argument( '-c', '--count',   dest='count',    type=str, help='number of tweets')
         
         self.search_parameters = vars(parser.parse_args())
         
         # removes empty arguments
         self.search_parameters = dict([[key, value] for key, value in self.search_parameters.items() if value])
 
-    def get_parameters(self) -> dict:
+    def get_valid_search_parameters(self) -> dict:
         self.parse_parameters()
-        return self.search_parameters
+        return self.valid_search_parameters
+
 
 if __name__ == "__main__":
 
