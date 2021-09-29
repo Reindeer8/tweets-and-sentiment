@@ -8,29 +8,45 @@ API_TYPE = "basic"
 # in the latter case parameter names should be adjusted accordingly.
 # Another way could be continuous or cursor
 
-class CustomStream(tweepy.StreamListener):
-    """Stream to get live tweets"""
 
-    def on_status(self, status):
-        print(status.text)
-        # yield status.text
+class TweetSentimentBot:
+    
+    def create_nested_class(self, the_class):
+        return TweetSentimentBot.the_class(self)
+    class StreamSentiment(tweepy.StreamListener):
+        """The class handles communication with twitter using tweepy, 
+        analyzes the sentiment and outputs the result.    
+        """
+        def __init__(self):
+            super().__init__(self, the_bot)
+            self.the_bot = the_bot
 
-    def on_error(self, status_code):
-        if status_code == 420:
-            #returning False in on_error disconnects the stream
-            return False
-       
-class TweetSearchBot():
-    """The class handles communication with twitter using tweepy.
-    Its goal is to get tweets from twitter.
-    """
+        def on_status(self, status):
+            print(status.full_text)
+            # yield status.text
 
+        def on_error(self, status_code):
+            if status_code == 420:
+                #returning False in on_error disconnects the stream
+                return False
+
+    class CursorSentiment():
+        def __init__(api, search_parameters = None):
+            if not api:
+                raise Exception('No api to talk to')
+            tweet_list = []
+            for tweet in tweepy.Cursor(api.search, q = search_parameters['q'], tweet_mode = 'extended').items(10):
+                tweet_list.append(tweet)        
+            for 
+
+            
     def __init__(self):
-        
+
         self.search_parameters = {}
         self.auth = None
-        self.connect_to_api(
-            CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)   
+        self.connect_to_api(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)   
+
+        super().__init__(self.auth) 
 
     def get_search_parameters(self):
         """Parses arguments using the argument parser class"""
@@ -42,7 +58,9 @@ class TweetSearchBot():
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
         auth.set_access_token(access_token, access_token_secret)
 
-        self.api = tweepy.API(auth, wait_on_rate_limit=True,
+        self.api = tweepy.API(
+            auth, 
+            wait_on_rate_limit=True,
             wait_on_rate_limit_notify=True)
 
     
@@ -51,16 +69,14 @@ class TweetSearchBot():
         if not self.api:
             raise Exception('No api to talk to')
         tweet_list = []
-        self.dummy(**self.search_parameters)
         for tweet in tweepy.Cursor(self.api.search, q = self.search_parameters['q'], tweet_mode = 'extended').items(10):
             tweet_list.append(tweet)        
 
         return tweet_list
 
-
     def get_live_tweets_with_stream(self):
 
-        twitter_listener = FilteredStream(self.api)
+        twitter_listener = TweetSentimentBot.StreamSentiment(self.api)
         myStream = tweepy.Stream(auth = self.api.auth, listener=twitter_listener, tweet_mode = 'extended')
         print('Starting the stream')
         myStream.filter(track=["one"], languages = ["en"])
@@ -70,7 +86,7 @@ if __name__ == '__main__':
 
     from pprint import pprint
 
-    the_bot = TweetSearchBot()
+    the_bot = TweetSentimentBot()
     the_bot.get_search_parameters()
 
     if API_TYPE == "basic":
