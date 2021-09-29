@@ -13,6 +13,7 @@ class TweetSentimentBot:
     
     def create_nested_class(self, the_class):
         return TweetSentimentBot.the_class(self)
+
     class StreamSentiment(tweepy.StreamListener):
         """The class handles communication with twitter using tweepy, 
         analyzes the sentiment and outputs the result.    
@@ -37,8 +38,6 @@ class TweetSentimentBot:
             tweet_list = []
             for tweet in tweepy.Cursor(api.search, q = search_parameters['q'], tweet_mode = 'extended').items(10):
                 tweet_list.append(tweet)        
-            for 
-
             
     def __init__(self):
 
@@ -46,7 +45,6 @@ class TweetSentimentBot:
         self.auth = None
         self.connect_to_api(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)   
 
-        super().__init__(self.auth) 
 
     def get_search_parameters(self):
         """Parses arguments using the argument parser class"""
@@ -92,6 +90,7 @@ if __name__ == '__main__':
     if API_TYPE == "basic":
         tweets = the_bot.basic_tweet_search_with_cursor()
     else:
+        the_bot.create_nested_class(the_bot, the_bot.StreamSentiment)
         the_bot.get_live_tweets_with_stream()
         
     for tweet in tweets:
