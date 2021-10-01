@@ -17,13 +17,13 @@ from random import shuffle
 # nltk.download('punkt')
 # from nltk.corpus import wordnet
 
+
 class SentimentAnalyzer:
 
     def __init__(self):
 
         self.stop_words = set(stopwords.words('english'))
         self.lemmatizer = WordNetLemmatizer()
-        self.train_naive_Bayes_classificator()
             
     def clean_tokens_and_lemmetize(self, tweet_tokens:list) -> list:
         """Removes hyperlinks, mentions, adds positional tag and then lemmatizes tweet tokens"""

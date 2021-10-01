@@ -13,6 +13,72 @@ API_TYPE = "search"
 
 class TweetSentimentBot:
     
+    class StreamSentiment(tweepy.Stream):
+        """The class handles communication with twitter using tweepy, 
+        analyzes the sentiment and outputs the result.    
+        """
+        def __init__(self, the_bot, *args):
+            super().__init__(*args)
+            self.the_bot = the_bot
+            self.time_of_last_print = None
+            print('Initializing stream')
+            self.interval_between_outputs = 10
+            self.tweet_limit = 100
+            self.tweet_counter = 0
+
+        def on_status(self, status):
+
+            text = status.text
+            sentiment = self.the_bot.analyzer.determine_sentiment(text)            
+            self.the_bot.tweets_with_sentiment.append([text, sentiment])
+            self.the_bot.ratio[sentiment] += 1
+            self.the_bot.ratio["Total"] += 1
+            mpt = self.the_bot.most_popular_tweet
+            if not mpt or mpt['Followers count'] <= status.user.followers_count:
+                self.the_bot.most_popular_tweet = {
+                    "Text": text,
+                    "Sentiment": sentiment,
+                    "Followers count": status.user.followers_count
+                }
+                mpt = self.the_bot.most_popular_tweet
+                # print(mpt)
+                # print(mpt['Text'])
+                # print()
+                # print()
+            if not self.time_of_last_print:
+                self.time_of_last_print = time()
+            current_time = time()
+            if self.interval_between_outputs >= current_time - self.time_of_last_print:
+                return            
+            self.time_of_last_print = current_time
+            ratio = self.the_bot.ratio
+            print()
+            print()
+            print()
+            print(mpt["Text"])
+            print()
+            print("Followers count:", mpt["Followers count"])
+            print("Sentiment:", mpt["Sentiment"])
+            print()
+            print()
+            num_of_pluses = round(20 * ratio["Positive"] / ratio["Total"])
+            num_of_minuses = 20 - num_of_pluses
+            print(f"P {ratio['Positive']}" + "+"*num_of_pluses + " " + "-" * num_of_minuses + f"{ratio['Negative']} N")
+            print('Total number of tweets:', ratio['Total'])
+            print()
+            self.tweet_counter += 1            
+            if self.tweet_counter > self.tweet_limit:
+                raise Exception('Max tweet limit is reached')
+            
+            # yield status.text
+
+        def on_error(self, status_code):
+            if status_code == 420:
+                #returning False in on_error disconnects the stream
+                print("There is an error")
+                return False
+     
+
     def __init__(self):
         self.tweets_with_sentiment:list = []
         self.ratio:dict = {
@@ -21,77 +87,30 @@ class TweetSentimentBot:
             "Total"   : 0 
         }
         self.most_popular_tweet: dict = {}
+        self.auth = None
+        self.analyzer = SentimentAnalyzer()
+            
+    def run(self):
+         
+
         self.get_search_parameters()
         if not self.search_parameters:
             raise Exception('No parameters provided')
-        self.analyzer = SentimentAnalyzer()
+        self.analyzer.train_naive_Bayes_classificator()
         if API_TYPE == "basic":
             tweets = self.basic_tweet_search_with_cursor()
-        else:
-            self.create_nested_stream(self)
-            self.auth = None
-            self.connect_to_api(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)            
+            for tweet in tweets:
+                print('\n\n')
+                print('Author: ' + tweet.author.name)
+                print('The tweet is truncated: ', tweet.truncated)
+                print('The text of tweet:\n' + tweet.full_text)
+            print()
+        else:            
+            self.auth = None            
             self.get_live_tweets_with_stream()
             
-        for tweet in tweets:
-            print('\n\n')
-            print('Author: ' + tweet.author.name)
-            print('The tweet is truncated: ', tweet.truncated)
-            print('The text of tweet:\n' + tweet.full_text)
-        print()
-
-    def create_nested_stream(self, the_outer_class):
-        return self.StreamSentiment(the_outer_class)
-
-    class StreamSentiment(tweepy.StreamListener):
-        """The class handles communication with twitter using tweepy, 
-        analyzes the sentiment and outputs the result.    
-        """
-        def __init__(self, the_bot):
-            super().__init__(self)
-            self.the_bot = the_bot
-            self.time_of_last_print = None
-            self.interval_between_outputs = 10
-
-        def on_status(self, status):
-            text = status.full_text
-            sentiment = self.the_bot.analyzer.determinet_sentiment(text)
-            self.the_bot.tweets_with_sentiment.append([text, sentiment])
-            self.the_bot.ratio[sentiment] += 1
-            self.the_bot.ratio["Total"] += 1
-            if not self.the_bot.most_popular_tweet or \
-                self.the_bot.most_popular_tweet.get("Retweets", 0):
-                self.the_bot.mostpopular_tweet = {
-                    "Text": text,
-                    "Sentiment": sentiment,
-                    "Retweets": status.full_text
-                }
-            if not self.time_of_last_print:
-                self.time_of_last_print = time.time()
-            current_time = time.time()
-            if self.inteval_between_outputs >= self.time_of_last_print - current_time:
-                return
-            mpt = self.the_bot.most_popular_tweet
-            ratio = self.the_bot.ratio
-            print()
-            print()
-            print()
-            print(mpt["Text"])
-            print()
-            print("Retweeets:", mpt["Retweets"])
-            print("Sentiment:", mpt["Sentiment"])
-            print()
-            print()
-            num_of_pluses = round(20 * ratio["Positive"] / ratio["Total"])
-            num_of_minuses = 20 - num_of_pluses
-            print(f"P {ratio['Positive']}" + "+"*num_of_pluses + " " + "-" * num_of_minuses + f"{ratio['Negative']} N")
-            print()
-            # yield status.text
-
-        def on_error(self, status_code):
-            if status_code == 420:
-                #returning False in on_error disconnects the stream
-                return False
+    def create_nested_stream(self, *args):
+        return self.StreamSentiment(self, *args)
             
     def get_search_parameters(self):
         """Parses arguments using the argument parser class"""
@@ -120,16 +139,17 @@ class TweetSentimentBot:
 
     def get_live_tweets_with_stream(self):
 
-        twitter_listener = TweetSentimentBot.StreamSentiment(self.api)
-        myStream = tweepy.Stream(auth = self.api.auth, listener=twitter_listener, tweet_mode = 'extended')
+        # twitter_listener = TweetSentimentBot.StreamSentiment(self.api)
+        self.stream = self.create_nested_stream(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
+        self.stream.filter(track = ['iphone 12'], languages=['en'])
         print('Starting the stream')
-        myStream.filter(track=["ufo"], languages = ["en"])
         
 
 if __name__ == '__main__':
 
     
     the_bot = TweetSentimentBot()
+    the_bot.run()
     """
     the_bot.get_search_parameters()
 

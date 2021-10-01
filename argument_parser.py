@@ -5,7 +5,7 @@ import json
 class ArgumentParser:
 
     def __init__(self):
-        self.valid_search_keys = {'q', 'geocode', 'lang', 'locale', 'result_type', 'count', 'until', 'since_id', 'max_id', 'include_entities', 'mode'}
+        self.valid_search_keys = {'q', 'locale', 'result_type', 'count', 'until', 'since_id', 'max_id', 'include_entities', 'mode'}
         self.all_search_parameters = {}
         self.valid_search_parameters= {}
         self.invalid_search_parameters = {}
@@ -13,7 +13,7 @@ class ArgumentParser:
     def parse_parameters(self):
         """
         Strings together class methods to parse cl arguments and if file indicated in those 
-        parses also the ones written in the file. Cl arguemtns will be overwritten by the ones from file,
+        parses also the ones written in the file. Cl arguemtns will be overwritten by the ones from the file,
         in case of overlapping parameters.
         """        
         self.parse_cl_arguments()
@@ -30,7 +30,7 @@ class ArgumentParser:
     def read_search_parameters_from_json(self, filename: str) -> None:
         """Reads search parameters from json file"""
         with open(filename, 'r') as json_file:
-            the_parameters =  json.load(json_file)
+            the_parameters = json.load(json_file)
         for key, value in the_parameters.items():
             self.search_parameters[key] = value
 
