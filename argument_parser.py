@@ -5,10 +5,12 @@ import json
 class ArgumentParser:
 
     def __init__(self):
-        self.valid_search_keys = {'q', 'locale', 'result_type', 'count', 'until', 'since_id', 'max_id', 'include_entities', 'mode'}
-        self.all_search_parameters = {}
-        self.valid_search_parameters= {}
-        self.invalid_search_parameters = {}
+        self.valid_search_keys: set = {
+            'q', 'locale', 'result_type', 'count', 'until', 'since_id', 'max_id', 'include_entities', 'mode', 'type'
+            }
+        self.all_search_parameters: dict = {}
+        self.valid_search_parameters: dict= {}
+        self.invalid_search_parameters: dict = {}
         
     def parse_parameters(self):
         """

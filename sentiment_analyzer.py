@@ -18,7 +18,7 @@ from random import shuffle
 # from nltk.corpus import wordnet
 
 
-class SentimentAnalyzer:
+class TweetSentimentAnalyzer:
 
     def __init__(self):
 
@@ -93,7 +93,7 @@ class SentimentAnalyzer:
 
 if __name__ == "__main__":
     
-    tweet_analyzer = SentimentAnalyzer()
+    tweet_analyzer = TweetSentimentAnalyzer()
     
     custom_tweets = [
         "I do not think Apple is a good company. Even more I believe next quarter won't be their best",
