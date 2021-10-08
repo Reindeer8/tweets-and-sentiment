@@ -15,6 +15,7 @@ DEFAULT_LOOKUP_TYPE = 'cursor'
 DEFAULT_LANGUAGE = 'en'
 DEFAULT_NUMBER_OF_TWEETS = 100
 
+
 class TweetSentimentBot:
     """The class that jugles all the elements to get tweets, 
     analyze sentiment and print results"""
@@ -27,7 +28,7 @@ class TweetSentimentBot:
         """
         def __init__(self, the_bot, *args):
             super().__init__(*args)
-            self.the_bot = the_bot            
+            self.the_bot = the_bot
             self.time_of_last_print = time()
             # time period between sentiment summary print
             self.interval_between_outputs = 10.0
@@ -43,21 +44,21 @@ class TweetSentimentBot:
             if self.interval_between_outputs <= current_time - self.time_of_last_print:
                 self.time_of_last_print = current_time
                 self.the_bot.print_sentiment_snapshot()
-            
+
             if len(self.the_bot.tweets_with_sentiment) > self.the_bot.max_tweet_number:
                 self.the_bot.print_sentiment_snapshot()
                 self.disconnect()
                 print('Retrieved the tweets and stream is closed now')
-    
+
     def __init__(self):
         self.tweets_with_sentiment: list = []
         # number of potitive and negative tweets
         self.ratio: dict = {
-            "Positive": 0,
-            "Negative": 0,
-            "Total"   : 0 
+            "positive": 0,
+            "negative": 0,
+            "total"   : 0 
         }
-        
+
         # it will store also the most retweeted tweet
         self.most_retweeted_tweet: dict = {}
         self.most_followed_tweet: dict = {}
@@ -81,7 +82,7 @@ class TweetSentimentBot:
         
         # updates counters
         self.ratio[sentiment] += 1
-        self.ratio["Total"] += 1
+        self.ratio["total"] += 1
         mrt = self.most_retweeted_tweet  # mpt stands for Most Popular Tweet
         mft = self.most_followed_tweet  # mft - Most Followed Tweet
 
@@ -129,7 +130,7 @@ class TweetSentimentBot:
             
     def create_nested_stream(self, *args):
         """Creates nested class, while passing as parameters the outer class,
-        so the inner class would have access or the outer class methods and properties.
+        so the inner class would have access to the outer class methods and properties.
         It is needed for streaming option.
         Other, potentially better way, would be asyncronous processing of the incoming tweets
         """
@@ -137,8 +138,8 @@ class TweetSentimentBot:
             
     def get_search_parameters(self):
         """Parses arguments using the argument parser class"""
-        parser = ArgumentParser()
-        self.search_parameters = parser.get_valid_search_parameters()
+        self.parser = ArgumentParser()
+        self.search_parameters = self.parser.get_valid_search_parameters()
 
     def connect_to_api(self, consumer_key, consumer_secret, access_token, access_token_secret):
         """Connects to the twitter api with creditentials from the twitter_creditentials.py"""
@@ -156,14 +157,12 @@ class TweetSentimentBot:
             ACCESS_TOKEN_SECRET
             )
         for tweet in tweepy.Cursor(
-            self.api.search_tweets, q=self.search_parameters['q']).items(self.max_tweet_number):
+            self.api.search_tweets, **self.parser.get_only_valid_search_parameters()).items(self.max_tweet_number):
 
-            #print(tweet)        
+            #print(tweet)             
             self.process_new_tweet(tweet)
 
         self.print_sentiment_snapshot(most_followers=True, most_retweeted=True)
-
-        return tweet_list
 
     def filter_with_stream(self):
         """Streams live tweets using modified tweepy stream."""        
@@ -174,7 +173,7 @@ class TweetSentimentBot:
             ACCESS_TOKEN_SECRET
             )
         self.stream.filter(
-            track = [self.search_parameters['q']],
+            **self.parser.get_only_valid_stream_parameters,
             languages=['en']
             ) # language of interest must be en for sentiment analysis to work
         print('Starting the stream')
@@ -193,22 +192,28 @@ class TweetSentimentBot:
             print()
 
         if most_followers:
-            mpt = self.most_followed_tweet
-            print(mpt["text"])
-            print()
-            print("Followers count:", mpt["followers count"])
-            print("Sentiment:", mpt["sentiment"])
-            print()
-            print()
+            mft = self.most_followed_tweet
+            if mft:
+                print(mft["text"])
+                print()
+                print("Followers count:", mft["followers count"])
+                print("Sentiment:", mft["sentiment"])
+                print()
+                print()
+            else:
+                print('There is no most followed tweet')
         
         if most_retweeted:
             mrt = self.most_retweeted_tweet
-            print(mpt["text"])
-            print()
-            print("Retweet count:", mpt["retweets count"])
-            print("Sentiment:", mpt["sentiment"])
-            print()
-            print()
+            if mrt:
+                print(mrt["text"])
+                print()
+                print("Retweet count:", mrt["retweets count"])
+                print("Sentiment:", mrt["sentiment"])
+                print()
+                print()
+            else:
+                print('There is no most retweeted tweet')
 
         if summary:
             ratio = self.ratio

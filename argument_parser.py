@@ -6,16 +6,17 @@ class ArgumentParser:
 
     def __init__(self):
         self.valid_search_keys: set = {
-            'q', 'locale', 'result_type', 'count', 'until', 'since_id', 'max_id', 'include_entities', 'mode', 'type'
+            'track', 'q', 'locale', 'result_type', 'count', 'until', 'since_id',
+            'max_id', 'include_entities', 'mode', 'type'
             }
         self.all_search_parameters: dict = {}
-        self.valid_search_parameters: dict= {}
+        self.valid_search_parameters: dict = {}
         self.invalid_search_parameters: dict = {}
         
     def parse_parameters(self):
-        """
-        Strings together class methods to parse cl arguments and if file indicated in those 
-        parses also the ones written in the file. Cl arguemtns will be overwritten by the ones from the file,
+        """Strings together class methods to parse cl arguments and if file
+        indicated in those parses also the ones written in the file.
+        Cl arguemtns will be overwritten by the ones from the file,
         in case of overlapping parameters.
         """        
         self.parse_cl_arguments()
@@ -39,8 +40,7 @@ class ArgumentParser:
         return None
     
     def parse_cl_arguments(self):
-        """
-        Parses search parameters. Command line arguments may contain filename of json file with the parameters.
+        """Parses search parameters. Command line arguments may contain filename of json file with the parameters.
         Parameters in file take precedence over cli arguments.
         """
         parser = argparse.ArgumentParser(description='Indicate the names of the files')  
@@ -62,8 +62,31 @@ class ArgumentParser:
         self.parse_parameters()
         return self.valid_search_parameters
 
+    def get_only_valid_search_parameters(self) -> dict:
+        """Selects search arguments 
+        suitable for the search"""
+        valid_parameters_names = (
+            'q', 'geocode', 'locale', 'result_type', 'count', 'until', 
+            'since_id', 'max_id', 'include_entities')
+        valid_search_parameters = {}
+        for name in valid_parameters_names:
+            if name in self.search_parameters:
+                valid_search_parameters[name] = self.search_parameters[name]
+        return valid_search_parameters
+
+    def get_only_valid_stream_parameters(self) -> dict:
+        """Selects search arguments suitable 
+        for the stream filtering"""
+        valid_parameters_names = (
+            'follow', 'track', 'locations')
+
+        valid_stream_parameters = {}
+        for name in valid_parameters_names:
+            if name in self.search_parameters:
+                valid_stream_parameters[name] = self.search_parameters[name]
+        return valid_stream_parameters
 
 if __name__ == "__main__":
 
     a = ArgumentParser()
-    print(a.get_parameters())
+    print(a.get_valid_search_parameters())
