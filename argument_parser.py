@@ -9,33 +9,36 @@ class ArgumentParser:
             'track', 'q', 'locale', 'result_type', 'count', 'until', 'since_id',
             'max_id', 'include_entities', 'mode', 'type'
             }
-        self.all_search_parameters: dict = {}
-        self.valid_search_parameters: dict = {}
-        self.invalid_search_parameters: dict = {}
+        self.arguments: dict = {}
+        self.valid_parameters: dict = {}
+        self.invalid_parameters: dict = {}
+        self.parse_arguments()
         
-    def parse_parameters(self):
+    def parse_arguments(self):
         """Strings together class methods to parse cl arguments and if file
         indicated in those parses also the ones written in the file.
         Cl arguemtns will be overwritten by the ones from the file,
         in case of overlapping parameters.
         """        
         self.parse_cl_arguments()
-        if "filename" in self.search_parameters:
-            self.read_search_parameters_from_json(self.search_parameters["filename"])
-            del self.search_parameters["filename"]
-
-        for key, value in self.search_parameters.items():
+        if "filename" in self.arguments:
+            self.read_search_parameters_from_json(self.arguments["filename"])
+            del self.arguments["filename"]
+        
+        for key, value in self.arguments.items():
             if key in self.valid_search_keys:
-                self.valid_search_parameters[key] = value
+                self.valid_parameters[key] = value
             else:
-                self.invalid_search_parameters[key] = value
+                self.invalid_parameters[key] = value
+        if self.invalid_parameters:
+            print('There are some unusable parameters provided')
 
     def read_search_parameters_from_json(self, filename: str) -> None:
         """Reads search parameters from json file"""
         with open(filename, 'r') as json_file:
             the_parameters = json.load(json_file)
         for key, value in the_parameters.items():
-            self.search_parameters[key] = value
+            self.arguments[key] = value
 
         return None
     
@@ -53,27 +56,26 @@ class ArgumentParser:
 
         parser.add_argument( '-c', '--count',   dest='count',    type=str, help='number of tweets')
         
-        self.search_parameters = vars(parser.parse_args())
+        self.arguments = vars(parser.parse_args())
         
         # removes empty arguments
-        self.search_parameters = dict([[key, value] for key, value in self.search_parameters.items() if value])
+        self.arguments = dict([[key, value] for key, value in self.arguments.items() if value])
+
+    def get_valid_parameters(self) -> dict:
+        return self.valid_parameters
 
     def get_valid_search_parameters(self) -> dict:
-        self.parse_parameters()
-        return self.valid_search_parameters
-
-    def get_only_valid_search_parameters(self) -> dict:
         """Selects search arguments 
         suitable for the search"""
         valid_parameters_names = (
-            'q', 'geocode', 'locale', 'result_type', 'count', 'until', 
+            'geocode', 'locale', 'result_type', 'count', 'until', 
             'since_id', 'max_id', 'include_entities')
         valid_search_parameters = {}
         for name in valid_parameters_names:
-            if name in self.search_parameters:
-                valid_search_parameters[name] = self.search_parameters[name]
+            if name in self.arguments:
+                valid_search_parameters[name] = self.valid_parameters[name]        
         return valid_search_parameters
-
+    
     def get_only_valid_stream_parameters(self) -> dict:
         """Selects search arguments suitable 
         for the stream filtering"""
@@ -82,11 +84,25 @@ class ArgumentParser:
 
         valid_stream_parameters = {}
         for name in valid_parameters_names:
-            if name in self.search_parameters:
-                valid_stream_parameters[name] = self.search_parameters[name]
+            if name in self.valid_parameters:
+                valid_stream_parameters[name] = self.valid_parameters[name]
         return valid_stream_parameters
+
+    def get_q_for_search(self):
+        return self.valid_parameters['q']
+
+    def get_track_for_stream(self):
+        return self.valid_parameters['track']
+
+    def a(*args,**kwargs):
+        #print(args)
+        print(kwargs)
+        #print(q)
 
 if __name__ == "__main__":
 
     a = ArgumentParser()
-    print(a.get_valid_search_parameters())
+    #print(a.get_valid_search_parameters())
+    #print(**a.get_only_valid_search_parameters())
+    a.a(**a.get_valid_search_parameters())
+    print(a.invalid_parameters)

@@ -68,8 +68,8 @@ class TweetSentimentAnalyzer:
         for tokens in negative_tweet_tokens:
             negative_cleaned_tokens_list.append(self.clean_tokens_and_lemmetize(tokens))
 
-        negative_dataset = [(token, "Negative") for token in self.format_tweets_for_model(negative_cleaned_tokens_list)]
-        positive_dataset = [(token, "Positive") for token in self.format_tweets_for_model(positive_cleaned_tokens_list)]
+        negative_dataset = [(token, "negative") for token in self.format_tweets_for_model(negative_cleaned_tokens_list)]
+        positive_dataset = [(token, "positive") for token in self.format_tweets_for_model(positive_cleaned_tokens_list)]
 
         dataset = positive_dataset + negative_dataset
 

@@ -13,7 +13,7 @@ import logging
 
 DEFAULT_LOOKUP_TYPE = 'cursor'
 DEFAULT_LANGUAGE = 'en'
-DEFAULT_NUMBER_OF_TWEETS = 100
+DEFAULT_NUMBER_OF_TWEETS = 10
 
 
 class TweetSentimentBot:
@@ -65,16 +65,20 @@ class TweetSentimentBot:
         self.auth = None
         self.analyzer = TweetSentimentAnalyzer()
 
-    def process_new_tweet(self, status):
+    def process_tweet(self, status):
         """Processess the newly retrieved tweet and
         adjust properties accordingly
         """
-        try:
-            text = status.extended_tweet["full_text"]
-            print('Extended_tweet')
-        except AttributeError:
+        if hasattr(status, 'full_text'):
+            text = status.full_text
+        elif hasattr(status, 'text'):
             text = status.text
-            print('Regular_tweet')
+        # try:
+        #     text = status.extended_tweet["full_text"]
+        #     print('Extended_tweet')
+        # except AttributeError:
+        #     text = status.text
+        #     print('Regular_tweet')
 
         # determines sentiment
         sentiment = self.analyzer.determine_sentiment(text)            
@@ -108,7 +112,7 @@ class TweetSentimentBot:
         self.get_search_parameters()
         if not self.search_parameters:
             raise Exception('No search parameters provided')
-
+        print()
         # in case some crucial search parameters are not provided..
         self.max_tweet_number = self.search_parameters.get('count', DEFAULT_NUMBER_OF_TWEETS)
         self.type = self.search_parameters.get('type', DEFAULT_LOOKUP_TYPE)
@@ -118,12 +122,7 @@ class TweetSentimentBot:
 
         if self.type == "cursor":
             tweets = self.search_with_cursor()
-            for tweet in tweets:
-                print('\n\n')
-                print('Author: ' + tweet.author.name)
-                print('The tweet is truncated: ', tweet.truncated)
-                print('The text of tweet:\n' + tweet.full_text)
-
+            
         elif self.type == 'stream':
             self.auth = None            
             self.get_live_tweets_with_stream()
@@ -139,7 +138,7 @@ class TweetSentimentBot:
     def get_search_parameters(self):
         """Parses arguments using the argument parser class"""
         self.parser = ArgumentParser()
-        self.search_parameters = self.parser.get_valid_search_parameters()
+        self.search_parameters = self.parser.get_valid_parameters()
 
     def connect_to_api(self, consumer_key, consumer_secret, access_token, access_token_secret):
         """Connects to the twitter api with creditentials from the twitter_creditentials.py"""
@@ -157,10 +156,11 @@ class TweetSentimentBot:
             ACCESS_TOKEN_SECRET
             )
         for tweet in tweepy.Cursor(
-            self.api.search_tweets, **self.parser.get_only_valid_search_parameters()).items(self.max_tweet_number):
-
-            #print(tweet)             
-            self.process_new_tweet(tweet)
+            self.api.search_tweets, self.parser.get_q_for_search(), lang='en', tweet_mode='extended').items(self.max_tweet_number):
+        
+        #for tweet in tweepy.Cursor(
+        #    self.api.search_tweets, self.parser.get_q_for_search()""", **self.parser.get_valid_search_parameters()""").items(self.max_tweet_number):
+            self.process_tweet(tweet)
 
         self.print_sentiment_snapshot(most_followers=True, most_retweeted=True)
 
@@ -179,11 +179,7 @@ class TweetSentimentBot:
         print('Starting the stream')
     
     def print_sentiment_snapshot(
-        self, 
-        most_retweeted = False,
-        most_followers = False,
-        summary = True
-        ):
+        self, most_retweeted=False, most_followers = False, summary = True):
         
         """Prints snapshot of the sentiment in tweets accumulated"""
         if any([most_retweeted, most_followers, summary]):
@@ -208,7 +204,7 @@ class TweetSentimentBot:
             if mrt:
                 print(mrt["text"])
                 print()
-                print("Retweet count:", mrt["retweets count"])
+                print("Retweet count:", mrt["retweet count"])
                 print("Sentiment:", mrt["sentiment"])
                 print()
                 print()
@@ -217,10 +213,10 @@ class TweetSentimentBot:
 
         if summary:
             ratio = self.ratio
-            num_of_pluses = round(20 * ratio["Positive"] / ratio["Total"])
+            num_of_pluses = round(20 * ratio["positive"] / ratio["total"])
             num_of_minuses = 20 - num_of_pluses
-            print(f"P {ratio['Positive']} |" + "+" * num_of_pluses + " " + "-" * num_of_minuses + f"| {ratio['Negative']} N")
-            print('Total number of tweets:', ratio['Total'])
+            print(f"P {ratio['positive']} |" + "+" * num_of_pluses + " " + "-" * num_of_minuses + f"| {ratio['negative']} N")
+            print('Total number of tweets:', ratio['total'])
             print()
 
 
