@@ -1,9 +1,9 @@
 import tweepy
 from sentiment_analyzer import TweetSentimentAnalyzer
 from twitter_creditentials import (
-    CONSUMER_KEY, 
-    CONSUMER_SECRET, 
-    ACCESS_TOKEN, 
+    CONSUMER_KEY,
+    CONSUMER_SECRET,
+    ACCESS_TOKEN,
     ACCESS_TOKEN_SECRET)
 from argument_parser import ArgumentParser
 from time import time
@@ -14,6 +14,7 @@ DEFAULT_ACTION_TYPE = 'cursor'
 DEFAULT_LANGUAGE = 'en'
 DEFAULT_NUMBER_OF_TWEETS = 10
 DEFAULT_INTERVAL_BETWEEN_SNAPSHOTS = 10
+
 
 class TweetSentimentBot:
     """The class that jugles all the elements to get tweets, 
@@ -53,7 +54,7 @@ class TweetSentimentBot:
         self.ratio: dict = {
             "positive": 0,
             "negative": 0,
-            "total"   : 0 
+            "total"   : 0
         }
 
         # it will store also the most retweeted tweet
@@ -74,7 +75,7 @@ class TweetSentimentBot:
             text = status.text
 
         # determines sentiment
-        sentiment = self.analyzer.determine_sentiment(text)            
+        sentiment = self.analyzer.determine_sentiment(text)
         self.tweets_with_sentiment.append([text, sentiment])
         
         # updates counters
