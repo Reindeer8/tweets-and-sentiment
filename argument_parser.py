@@ -7,8 +7,7 @@ class ArgumentParser:
     def __init__(self):
         self.valid_search_keys: set = {
             'track', 'q', 'locale', 'result_type', 'count', 'until', 'since_id',
-            'max_id', 'include_entities', 'mode', 'type'
-            }
+            'max_id', 'include_entities', 'mode', 'action_type'}
         self.arguments: dict = {}
         self.valid_parameters: dict = {}
         self.invalid_parameters: dict = {}
@@ -38,23 +37,20 @@ class ArgumentParser:
         with open(filename, 'r') as json_file:
             the_parameters = json.load(json_file)
         for key, value in the_parameters.items():
-            self.arguments[key] = value
-
-        return None
+            self.arguments[key] = value        
     
     def parse_cl_arguments(self):
         """Parses search parameters. Command line arguments may contain filename of json file with the parameters.
         Parameters in file take precedence over cli arguments.
         """
-        parser = argparse.ArgumentParser(description='Indicate the names of the files')  
+        parser = argparse.ArgumentParser(description='Parameters to be used in looking up the tweets')  
         
-        parser.add_argument( '-f',  '--filename',   dest='filename',    type=str, help='txt file with search parameters', default='parameters.json')
-        parser.add_argument( '-k',  '--keywords',   dest='q',           type=str, help='keywords to search by')
-        parser.add_argument( '-until', '--until',  dest='until',       type=str, help='end date (format YYYY-mm-dd)')
+        parser.add_argument( '-f', '--filename', dest='filename', type=str, help='json file with search parameters', default='parameters.json', metavar = '')
+        parser.add_argument( '-k', '--keywords', dest='q',type=str, help='keywords to search by', metavar='')
+        parser.add_argument( '-until', '--until',  dest='until', type=str, help='end date (format YYYY-mm-dd)', metavar = '')
         # parser.add_argument( '-r',  '--region',     dest='region',      type=str, help='region of tweets')
-        parser.add_argument( '-la', '--language',   dest='lang',    type=str, help='language of tweets')
-
-        parser.add_argument( '-c', '--count',   dest='count',    type=str, help='number of tweets')
+        parser.add_argument( '-la', '--language', dest='lang', type=str, help='language of tweets', metavar='')
+        parser.add_argument( '-c', '--count', dest='count', type=str, help='number of tweets to be retrieved', metavar='')
         
         self.arguments = vars(parser.parse_args())
         
@@ -65,44 +61,60 @@ class ArgumentParser:
         return self.valid_parameters
 
     def get_valid_search_parameters(self) -> dict:
-        """Selects search arguments 
+        """Selects search parameters 
         suitable for the search"""
-        valid_parameters_names = (
+        valid_parameters_names = { 
             'geocode', 'locale', 'result_type', 'count', 'until', 
-            'since_id', 'max_id', 'include_entities')
+            'since_id', 'max_id', 'include_entities'}
         valid_search_parameters = {}
         for name in valid_parameters_names:
             if name in self.arguments:
-                valid_search_parameters[name] = self.valid_parameters[name]        
+                valid_search_parameters[name] = self.valid_parameters[name]
+
+        # for sentiment analysis language needs to be English
+        valid_search_parameters.update({'lang': 'en', 'tweet_mode': 'extended'})        
         return valid_search_parameters
     
-    def get_only_valid_stream_parameters(self) -> dict:
-        """Selects search arguments suitable 
+    def get_valid_stream_parameters(self) -> dict:
+        """Selects search parameters suitable 
         for the stream filtering"""
-        valid_parameters_names = (
-            'follow', 'track', 'locations')
+        valid_parameters_names = ['follow', 'track', 'locations']
 
         valid_stream_parameters = {}
         for name in valid_parameters_names:
             if name in self.valid_parameters:
                 valid_stream_parameters[name] = self.valid_parameters[name]
+        # for sentiment analysis language needs to be English\
+        if type(valid_stream_parameters['track']) != 'list':
+            valid_stream_parameters['track'] = [valid_stream_parameters['track']]
+       
+        valid_stream_parameters['languages'] = ['en']
+        print(valid_stream_parameters)
         return valid_stream_parameters
 
     def get_q_for_search(self):
-        return self.valid_parameters['q']
+        """Returns keyword value for filtering the live stream.
+        It is needed as the first argument for search is positional
+        """
+        if 'q' in self.valid_parameters:
+            q = self.valid_parameters['q']
+        elif 'track' in self.valid_parameters:
+            q = self.valid_parameters['track']
+        return q
 
     def get_track_for_stream(self):
-        return self.valid_parameters['track']
+        """Returns keyword value for filtering the live stream.
+        Unlike in case of search, stream's arguments all are keyword parameters
+        """
+        if 'track' in self.valid_parameters:
+            track = self.valid_parameters['track']
+        elif 'q' in self.valid_parameters:
+            track = self.valid_parameters['q']
+        return track 
 
-    def a(*args,**kwargs):
-        #print(args)
-        print(kwargs)
-        #print(q)
 
 if __name__ == "__main__":
 
     a = ArgumentParser()
-    #print(a.get_valid_search_parameters())
-    #print(**a.get_only_valid_search_parameters())
-    a.a(**a.get_valid_search_parameters())
-    print(a.invalid_parameters)
+    print(a.get_valid_parameters())
+    print(a.get_valid_stream_parameters())

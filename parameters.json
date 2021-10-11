@@ -1,6 +1,7 @@
 {
-    "q": "Iphone",
-    "until": "2020-08-08",
-    "lang": "English",
-    "type": "cursor"
+    "q": "Lidl", 
+    "track": "Iphone 13",
+    "lang": "en",
+    "action_type": "stream",
+    "count": 100
 }

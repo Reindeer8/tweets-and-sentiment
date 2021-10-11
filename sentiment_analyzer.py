@@ -52,7 +52,7 @@ class TweetSentimentAnalyzer:
 
         for tweet_tokens in cleaned_tokens_list:
             yield dict([token, True] for token in tweet_tokens)
-
+    
     def train_naive_Bayes_classificator(self):        
         """ Tokenizes, cleans and lemmetizes nltk tweet samples 
         and uses those to train naive Bayes classificator
